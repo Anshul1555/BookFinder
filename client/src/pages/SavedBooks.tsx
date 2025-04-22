@@ -1,18 +1,20 @@
 import { Container, Card, Button, Row, Col } from 'react-bootstrap';
 import { useQuery, useMutation } from '@apollo/client';
 import { GET_ME } from '../utils/queries.js';
-import { REMOVE_BOOK } from '../utils/mutations.js';
-import { removeBookId } from '../utils/localStorage';
+import { DELETE_BOOK } from '../utils/mutations.js';
+import { removeBookId } from '../utils/localStorage.js';
 
 const SavedBooks = () => {
   const { loading, error, data, refetch } = useQuery(GET_ME);
-  const [removeBook] = useMutation(REMOVE_BOOK);
+  console.log('SavedBooks data:', data);
+
+  const [deleteBook] = useMutation(DELETE_BOOK);
 
   const userData = data?.me || { savedBooks: [] };
 
   const handleDeleteBook = async (bookId: string) => {
     try {
-      await removeBook({
+      await deleteBook({
         variables: { bookId },
       });
 
