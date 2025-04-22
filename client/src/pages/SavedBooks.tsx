@@ -4,11 +4,48 @@ import { GET_ME } from '../utils/queries.js';
 import { DELETE_BOOK } from '../utils/mutations.js';
 import { removeBookId } from '../utils/localStorage.js';
 
+interface MeData {
+  me: {
+    _id: string;
+    username: string;
+    email: string;
+    savedBooks: {
+      bookId: string;
+      title: string;
+      authors: string[];
+      description?: string;
+      image?: string;
+      link?: string;
+    }[];
+  };
+}
+
+
 const SavedBooks = () => {
-  const { loading, error, data, refetch } = useQuery(GET_ME);
+  const { loading, error, data } = useQuery(GET_ME);
   console.log('SavedBooks data:', data);
 
-  const [deleteBook] = useMutation(DELETE_BOOK);
+  const [deleteBook] = useMutation(DELETE_BOOK, {
+    update(cache, { data }) {
+      if (!data?.deleteBook) return;
+  
+      // Read the current GET_ME result from the cache
+      const existing = cache.readQuery<MeData>({ query: GET_ME });
+  
+      if (existing && existing.me) {
+        cache.writeQuery<MeData>({
+          query: GET_ME,
+          data: {
+            me: {
+              ...existing.me,
+              savedBooks: data.deleteBook.savedBooks,
+            },
+          },
+        });
+      }
+    },
+  });
+  
 
   const userData = data?.me || { savedBooks: [] };
 
@@ -17,9 +54,8 @@ const SavedBooks = () => {
       await deleteBook({
         variables: { bookId },
       });
-
-      removeBookId(bookId);      
-      await refetch();         
+      
+      removeBookId(bookId);       
     } catch (err) {
       console.error('Error deleting book:', err);
     }
