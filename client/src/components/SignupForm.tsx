@@ -8,7 +8,7 @@ import Auth from '../utils/auth';
 import type { User } from '../models/User';
 
 // biome-ignore lint/correctness/noEmptyPattern: <explanation>
-const SignupForm = ({}: { handleModalClose: () => void }) => {
+const SignupForm = ({ }: { handleModalClose: () => void }) => {
   const [addUser] = useMutation(ADD_USER);
 
   // set initial form state
@@ -36,9 +36,11 @@ const SignupForm = ({}: { handleModalClose: () => void }) => {
     try {
       const { data } = await addUser({
         variables: {
-          username: userFormData.username,
-          email: userFormData.email,
-          password: userFormData.password,
+          input: {
+            username: userFormData.username,
+            email: userFormData.email,
+            password: userFormData.password,
+          },
         },
       });
       Auth.login(data.addUser.token);
